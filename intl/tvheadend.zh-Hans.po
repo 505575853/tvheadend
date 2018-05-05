@@ -1832,7 +1832,7 @@ msgstr "默认语言(s)"
 
 #: src/access.c:1678
 msgid "Default language."
-msgstr "默认语言"
+msgstr "默认语言."
 
 #: src/profile.c:345
 msgid "Default priority"
