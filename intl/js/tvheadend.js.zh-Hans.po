@@ -1846,7 +1846,7 @@ msgstr "未修正的块"
 #: src/webui/static/app/idnode.js:1779 src/webui/static/app/idnode.js:2276
 #: src/webui/static/app/idnode.js:2812
 msgid "Undo"
-msgstr ""
+msgstr "返回"
 
 #: src/webui/static/app/status.js:458 src/webui/static/app/status.js:478
 msgid "Unknown"
@@ -1854,7 +1854,7 @@ msgstr "未知"
 
 #: src/webui/static/app/dvr.js:288
 msgid "Upcoming / Current Recordings"
-msgstr "即将开始/现在的录音"
+msgstr "即将开始/现在的录制"
 
 #: src/webui/static/app/dvr.js:287
 msgid "Upcoming Recording"
