@@ -1824,15 +1824,15 @@ msgstr ""
 
 #: src/access.c:1383 src/access.c:1395 src/config.c:1931 src/profile.c:316
 msgid "Default"
-msgstr ""
+msgstr "默认"
 
 #: src/config.c:2207
 msgid "Default language(s)"
-msgstr ""
+msgstr "默认语言(s)"
 
 #: src/access.c:1678
 msgid "Default language."
-msgstr ""
+msgstr "默认语言"
 
 #: src/profile.c:345
 msgid "Default priority"
@@ -2501,7 +2501,7 @@ msgstr ""
 
 #: src/access.c:1386 src/config.c:1963
 msgid "Expert"
-msgstr ""
+msgstr "专业"
 
 #: src/satip/server.c:587
 msgid "Exported tuners"
@@ -7349,7 +7349,7 @@ msgstr ""
 
 #: src/access.c:1456 src/config.c:2266
 msgid "Theme"
-msgstr ""
+msgstr "主题"
 
 #: src/input/mpegts/linuxdvb/linuxdvb_frontend.c:246
 #: src/input/mpegts/satip/satip_frontend.c:302
@@ -7584,7 +7584,7 @@ msgstr ""
 
 #: src/config.c:2081
 msgid "Tvheadend server name"
-msgstr ""
+msgstr "Tvheadend 服务名称"
 
 #: src/epggrab/module.c:137
 msgid "Type"
