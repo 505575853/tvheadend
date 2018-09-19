@@ -69,7 +69,7 @@ tvheadend.channelLookupName = function(key) {
 tvheadend.channelTagLookupName = function(key) {
     var s = "";
     var tags = tvheadend.getChannelTags();
-    var index = tvheadend.tags.find('key', key);
+    var index = tags.find('key', key);
     if (index !== -1)
         s = tags.getAt(index).get('val');
     return s;
@@ -152,7 +152,7 @@ tvheadend.epgDetails = function(event) {
     if (event.summary)
       content += '<div class="x-epg-summary">' + event.summary + '</div>';
     if (event.description)
-      content += '<div class="x-epg-desc">' + event.description + '</div>';
+      content += '<div class="x-epg-desc">' + tvheadend.labelFormattingParser(event.description) + '</div>';
     if (event.summary || event.description)
       content += '<hr class="x-epg-hr"/>';
     content += tvheadend.getDisplayCredits(event.credits);
@@ -304,12 +304,14 @@ tvheadend.epgDetails = function(event) {
 
     }
 
+    var windowHeight = Ext.getBody().getViewSize().height - 150;
+
     var win = new Ext.Window({
         title: _('Broadcast Details'),
         iconCls: 'broadcast_details',
         layout: 'fit',
         width: 675,
-        height: 450,
+        height: windowHeight,
         constrainHeader: true,
         buttons: buttons,
         buttonAlign: 'center',
@@ -506,7 +508,7 @@ tvheadend.epg = function() {
 
         if (value) {
           var dt = new Date(value);
-          return dt.format('D, M d, H:i');
+          return tvheadend.toCustomDate(dt,tvheadend.date_mask);
         }
         return "";
     }
@@ -1154,7 +1156,7 @@ tvheadend.epg = function() {
           items: [
               epgFilterCat1, '-',
               epgFilterCat2, '-',
-              epgFilterCat3, '-',
+              epgFilterCat3, '-'
           ]
         });
         panel.add(tbar2);

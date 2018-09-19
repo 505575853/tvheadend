@@ -370,7 +370,7 @@ tvheadend.IdNodeField = function(conf)
                 return function(v) {
                     if (v > 0) {
                         var dt = new Date(v * 1000);
-                        return dt.toLocaleDateString();
+                        return dt.toLocaleDateString(tvheadend.toLocaleFormat());
                     }
                     return '';
                 }
@@ -378,8 +378,7 @@ tvheadend.IdNodeField = function(conf)
             return function(v) {
                 if (v > 0) {
                     var dt = new Date(v * 1000);
-                    var wd = dt.toLocaleString(tvheadend.language, {weekday: 'short'});
-                    return wd + ' ' + dt.toLocaleString();
+                    return tvheadend.toCustomDate(dt,tvheadend.date_mask);
                 }
                 return '';
             }
@@ -754,8 +753,8 @@ tvheadend.idnode_editor_field = function(f, conf)
             if (!f.duration) {
                 if (d) {
                     var dt = new Date(value * 1000);
-                    value = f.date ? dt.toLocaleDateString() :
-                                     dt.toLocaleString();
+                    value = f.date ? dt.toLocaleDateString(tvheadend.toLocaleFormat()) :
+                                     dt.toLocaleString(tvheadend.toLocaleFormat());
                     r = new Ext.form.TextField({
                         fieldLabel: f.caption,
                         name: f.id,
@@ -1374,12 +1373,15 @@ tvheadend.idnode_create = function(conf, onlyDefault, cloneValues)
                 var r = store.getAt(s.selectedIndex);
                 if (r) {
                     var d = r.json.props;
+
                     if (d) {
                         d = tvheadend.idnode_filter_fields(d, conf.select.list || null);
                         pclass = r.get(conf.select.valueField);
                         win.setTitle(String.format(_('Add {0}'), s.lastSelectionText));
                         panel.remove(s);
                         tvheadend.idnode_editor_form(uilevel, d, r.json, panel, { create: true, showpwd: true, forms: conf.forms });
+                        if (cloneValues)
+                            panel.getForm().setValues(cloneValues);
                         abuttons.save.setVisible(true);
                         abuttons.apply.setVisible(true);
                         win.setOriginSize(true);
