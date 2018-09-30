@@ -1045,6 +1045,10 @@ htsp_build_dvrentry(htsp_connection_t *htsp, dvr_entry_t *de, const char *method
     const char *image = dvr_entry_class_image_url_get(de);
     if(image && *image)
       htsmsg_add_str(out, "image", image);
+    /* htsmsg camelcase to be compatible with other names */
+    image = de->de_fanart_image;
+    if(image && *image)
+      htsmsg_add_str(out, "fanartImage", image);
     if (de->de_copyright_year)
       htsmsg_add_u32(out, "copyrightYear", de->de_copyright_year);
 
@@ -3951,7 +3955,7 @@ htsp_event_delete(epg_broadcast_t *ebc)
   htsp_async_send(m, HTSP_ASYNC_EPG, HTSP_ASYNC_AUX_EPG, ebc);
 }
 
-const static char frametypearray[PKT_NTYPES] = {
+static const char frametypearray[PKT_NTYPES] = {
   [PKT_I_FRAME] = 'I',
   [PKT_P_FRAME] = 'P',
   [PKT_B_FRAME] = 'B',
