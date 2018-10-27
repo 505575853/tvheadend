@@ -343,14 +343,12 @@ pass_muxer_eit_cb(mpegts_psi_table_t *mt, const uint8_t *buf, int len)
   uint8_t *sbuf, *out;
   int olen;
 
-  /* filter out the other transponders */
-  if ((buf[0] < 0x50 && buf[0] != 0x4e) || buf[0] > 0x5f || len < 14)
+  /* filter out wrong tables */
+  if (buf[0] < 0x4e || buf[0] > 0x6f || len < 14)
     return;
 
   pm = (pass_muxer_t*)mt->mt_opaque;
   sid = (buf[3] << 8) | buf[4];
-  if (sid != pm->pm_src_sid)
-    return;
 
   /* TODO: set free_CA_mode bit to zero */
 
@@ -358,6 +356,13 @@ pass_muxer_eit_cb(mpegts_psi_table_t *mt, const uint8_t *buf, int len)
   memcpy(sbuf, buf, len);
   sbuf[3] = pm->pm_dst_sid >> 8;
   sbuf[4] = pm->pm_dst_sid;
+  sbuf[8] = pm->pm_dst_tsid >> 8;
+  sbuf[9] = pm->pm_dst_tsid;
+  sbuf[10] = pm->pm_dst_onid >> 8;
+  sbuf[11] = pm->pm_dst_onid;
+
+  if (sid != pm->pm_src_sid)
+    len = 14; /* no events, just keep the SI tables consistent */
 
   len = dvb_table_append_crc32(sbuf, len, len + 4);
   if (len > 0 && (olen = dvb_table_remux(mt, sbuf, len, &out)) > 0) {

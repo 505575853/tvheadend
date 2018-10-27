@@ -20,6 +20,7 @@ tvheadend.status_subs = function(panel, index)
             r.data.channel = m.channel;
             r.data.service = m.service;
             r.data.state = m.state;
+            if (m.pids) r.data.pids = m.pids;
             if (m.descramble) r.data.descramble = m.descramble;
             if (m.profile) r.data.profile = m.profile;
             r.data.errors = m.errors;
@@ -49,6 +50,7 @@ tvheadend.status_subs = function(panel, index)
                 { name: 'service', sortType: stype },
                 { name: 'profile', sortType: stype },
                 { name: 'state', sortType: stype },
+                { name: 'pids' },
                 { name: 'descramble', sortType: stype },
                 { name: 'errors', sortType: stypei },
                 { name: 'in', sortType: stypei },
@@ -115,7 +117,7 @@ tvheadend.status_subs = function(panel, index)
                 sortable: true
             },
             {
-                width: 250,
+                width: 210,
                 id: 'service',
                 header: _("Service"),
                 dataIndex: 'service',
@@ -145,6 +147,23 @@ tvheadend.status_subs = function(panel, index)
                 header: _("State"),
                 dataIndex: 'state',
                 sortable: true
+            },
+            {
+                width: 90,
+                id: 'pids',
+                header: _("PID list"),
+                dataIndex: 'pids',
+                sortable: false,
+                renderer: function(v) {
+                    var r = [];
+                    Ext.each(v, function(pid) {
+                      r.push(pid);
+                    });
+                    if (r.length < 1) return "";
+                    r.sort(function(a, b){return a-b});
+                    if (r[r.length - 1] == 65535) return _("all");
+                    return r.join(',');
+                }
             },
             {
                 width: 80,
@@ -191,6 +210,7 @@ tvheadend.status_subs = function(panel, index)
         subs = new Ext.grid.GridPanel({
             tbar: ['->', {
                 text: _('Help'),
+                tooltip: _('View help docs.'),
                 iconCls: 'help',
                 handler: function() {
                     new tvheadend.mdhelp('status_subscriptions')
@@ -258,6 +278,7 @@ tvheadend.status_streams = function(panel, index)
         }
         r.data.subs = m.subs;
         r.data.weight = m.weight;
+        r.data.pids = m.pids;
         r.data.signal = m.signal;
         r.data.ber = m.ber;
         r.data.unc = m.unc;
@@ -319,6 +340,7 @@ tvheadend.status_streams = function(panel, index)
                 { name: 'stream', sortType: stype },
                 { name: 'subs', sortType: stypei },
                 { name: 'weight', sortType: stypei },
+                { name: 'pids' },
                 { name: 'signal', sortType: stypei },
                 { name: 'ber', sortType: stypei },
                 { name: 'unc', sortType: stypei },
@@ -390,6 +412,23 @@ tvheadend.status_streams = function(panel, index)
                 header: _("Weight"),
                 dataIndex: 'weight',
                 sortable: true
+            },
+            {
+                width: 100,
+                id: 'pids',
+                header: _("PID list"),
+                dataIndex: 'pids',
+                sortable: false,
+                renderer: function(v) {
+                    var r = [];
+                    Ext.each(v, function(pid) {
+                      r.push(pid);
+                    });
+                    if (r.length < 1) return "";
+                    r.sort(function(a, b){return a-b});
+                    if (r[r.length - 1] == 65535) return _("all");
+                    return r.join(',');
+                }
             },
             {
                 width: 50,
@@ -506,6 +545,7 @@ tvheadend.status_streams = function(panel, index)
             },
             '->',{
                 text: _('Help'),
+                tooltip: _('View help docs.'),
                 iconCls: 'help',
                 handler: function() {
                     new tvheadend.mdhelp('status_stream')
@@ -702,6 +742,7 @@ tvheadend.status_conns = function(panel, index) {
         grid = new Ext.grid.GridPanel({
             tbar: ['->', {
                 text: _('Help'),
+                tooltip: _('View help docs.'),
                 iconCls: 'help',
                 handler: function() {
                     new tvheadend.mdhelp('status_connections')

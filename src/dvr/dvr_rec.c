@@ -57,6 +57,23 @@ static const int prio2weight[6] = {
   [DVR_PRIO_NOTSET]      = 300, /* DVR_PRIO_NORMAL */
 };
 
+/// Spawn a fetch of artwork for the entry.
+void
+dvr_spawn_fetch_artwork(dvr_entry_t *de)
+{
+  /* Don't want to use _SC_ARG_MAX since it will be a large number */
+  char buf[1024];
+  char ubuf[UUID_HEX_SIZE];
+
+  if (!dvr_entry_allow_fanart_lookup(de))
+    return;
+
+  snprintf(buf, sizeof buf, "tvhmeta --uuid %s %s",
+           idnode_uuid_as_str(&de->de_id, ubuf),
+           de->de_config->dvr_fetch_artwork_options);
+  dvr_spawn_cmd(de, buf, NULL, 1);
+}
+
 /**
  *
  */
@@ -66,11 +83,11 @@ dvr_rec_subscribe(dvr_entry_t *de)
   char buf[100];
   int weight;
   profile_t *pro;
-  profile_chain_t *prch;
+  profile_chain_t *prch = NULL;
   struct sockaddr_storage sa;
-  access_t *aa;
+  access_t *aa = NULL;
   uint32_t rec_count, net_count;
-  int pri, c1, c2;
+  int ret = 0, pri, c1, c2;
   struct stat st;
 
   assert(de->de_s == NULL);
@@ -85,15 +102,16 @@ dvr_rec_subscribe(dvr_entry_t *de)
 
   snprintf(buf, sizeof(buf), "DVR: %s", lang_str_get(de->de_title, NULL));
 
-  if (de->de_owner && de->de_owner[0] != '\0')
+  if (de->de_owner && de->de_owner[0] != '\0') {
     aa = access_get_by_username(de->de_owner);
-  else if (de->de_creator && de->de_creator[0] != '\0' &&
-           tcp_get_ip_from_str(de->de_creator, &sa) != NULL)
+  } else if (de->de_creator && de->de_creator[0] != '\0' &&
+           tcp_get_ip_from_str(de->de_creator, &sa) != NULL) {
     aa = access_get_by_addr(&sa);
-  else {
+  } else {
     tvherror(LS_DVR, "unable to find access (owner '%s', creator '%s')",
              de->de_owner, de->de_creator);
-    return -EPERM;
+    ret = -EPERM;
+    goto _return;
   }
 
   if (aa->aa_conn_limit || aa->aa_conn_limit_dvr) {
@@ -107,15 +125,15 @@ dvr_rec_subscribe(dvr_entry_t *de)
                       "(limit %u, dvr limit %u, active DVR %u, streaming %u)",
                aa->aa_username ?: "", aa->aa_representative ?: "",
                aa->aa_conn_limit, aa->aa_conn_limit_dvr, rec_count, net_count);
-      access_destroy(aa);
-      return -EOVERFLOW;
+      ret = -EOVERFLOW;
+      goto _return;
     }
   }
-  access_destroy(aa);
 
   if(stat(de->de_config->dvr_storage, &st) || !S_ISDIR(st.st_mode)) {
     tvherror(LS_DVR, "the directory '%s' is not accessible", de->de_config->dvr_storage);
-    return -EIO;
+    ret = -EIO;
+    goto _return;
   }
 
   pro = de->de_config->dvr_profile;
@@ -130,21 +148,19 @@ dvr_rec_subscribe(dvr_entry_t *de)
     if (profile_chain_open(prch, &de->de_config->dvr_muxcnf, NULL, 0, 0)) {
       tvherror(LS_DVR, "unable to create channel streaming default chain '%s' for '%s'",
                profile_get_name(pro), channel_get_name(de->de_channel, channel_blank_name));
-      profile_chain_close(prch);
-      free(prch);
-      return -EINVAL;
+      ret = -EINVAL;
+      goto _return;
     }
   }
 
   de->de_s = subscription_create_from_channel(prch, NULL, weight,
 					      buf, prch->prch_flags,
-					      NULL, NULL, NULL, NULL);
+					      NULL, aa->aa_username ?: "", NULL, NULL);
   if (de->de_s == NULL) {
     tvherror(LS_DVR, "unable to create new channel subcription for '%s' profile '%s'",
              channel_get_name(de->de_channel, channel_blank_name), profile_get_name(pro));
-    profile_chain_close(prch);
-    free(prch);
-    return -EINVAL;
+    ret = -EINVAL;
+    goto _return;
   }
 
   de->de_chain = prch;
@@ -154,7 +170,17 @@ dvr_rec_subscribe(dvr_entry_t *de)
 
   if (de->de_config->dvr_preproc)
     dvr_spawn_cmd(de, de->de_config->dvr_preproc, NULL, 1);
-  return 0;
+  if (de->de_config->dvr_fetch_artwork)
+    dvr_spawn_fetch_artwork(de);
+
+  access_destroy(aa);
+  return ret;
+
+_return:
+  profile_chain_close(prch);
+  free(prch);
+  access_destroy(aa);
+  return ret;
 }
 
 /**
@@ -1567,6 +1593,17 @@ dvr_thread(void *aux)
   real_start = dvr_entry_get_start_time(de, 0);
   tvhtrace(LS_DVR, "%s - recoding thread started for \"%s\"",
            idnode_uuid_as_str(&de->de_id, ubuf), lang_str_get(de->de_title, NULL));
+  if (!running_disabled && de->de_bcast) {
+    real_start = gclk();
+    switch (de->de_bcast->running) {
+    case EPG_RUNNING_PAUSE:
+      atomic_set_time_t(&de->de_running_pause, real_start);
+      /* fall through */
+    case EPG_RUNNING_NOW:
+      atomic_set_time_t(&de->de_running_start, real_start);
+      break;
+    }
+  }
   dvr_thread_global_unlock(de);
 
   TAILQ_INIT(&backlog);

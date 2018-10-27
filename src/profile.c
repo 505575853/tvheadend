@@ -1143,6 +1143,9 @@ int profile_chain_weight(profile_chain_t *prch, int custom)
 void
 profile_chain_close(profile_chain_t *prch)
 {
+  if (prch == NULL)
+    return;
+
   profile_sharer_destroy(prch);
 
 #if ENABLE_TIMESHIFT
@@ -2558,7 +2561,7 @@ profile_init(void)
     HTSMSG_FOREACH(f, c) {
       if (!(e = htsmsg_field_get_map(f)))
         continue;
-      (void)profile_create(f->hmf_name, e, 0);
+      (void)profile_create(htsmsg_field_name(f), e, 0);
     }
     htsmsg_destroy(c);
   }

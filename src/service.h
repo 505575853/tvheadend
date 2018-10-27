@@ -43,6 +43,7 @@ struct mpegts_apids;
 struct profile_chain;
 struct source_info;
 struct descramble_info;
+struct mpegts_apids;
 
 /**
  *
@@ -224,6 +225,8 @@ typedef struct service {
   void (*s_delete)(struct service *t, int delconf);
 
   void (*s_unref)(struct service *t);
+
+  struct mpegts_apids *(*s_pid_list)(struct service *t);
 
   int (*s_satip_source)(struct service *t);
 
@@ -432,10 +435,10 @@ int service_is_sdtv(const service_t *t);
 int service_is_uhdtv(const service_t *t);
 int service_is_hdtv(const service_t *t);
 int service_is_radio(const service_t *t);
-int service_is_other(const service_t *t);
-
 static inline int service_is_tv( const service_t *s)
   { return service_is_hdtv(s) || service_is_sdtv(s) || service_is_uhdtv(s); }
+static inline int service_is_other(const service_t *t)
+  { return !service_is_tv(t) && !service_is_radio(t); }
 
 int service_is_encrypted ( const service_t *t );
 

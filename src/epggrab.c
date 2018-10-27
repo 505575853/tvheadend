@@ -238,7 +238,7 @@ static void _epggrab_load ( void )
     idnode_load(&epggrab_conf.idnode, m);
     if ((a = htsmsg_get_map(m, "modules"))) {
       HTSMSG_FOREACH(f, a) {
-        mod = epggrab_module_find_by_id(f->hmf_name);
+        mod = epggrab_module_find_by_id(htsmsg_field_name(f));
         map = htsmsg_field_get_map(f);
         if (mod && map) {
           idnode_load(&mod->idnode, map);
@@ -401,6 +401,17 @@ const idclass_t epggrab_class = {
       .group  = 1,
     },
     {
+      .type   = PT_BOOL,
+      .id     = "epgdb_saveafterimport",
+      .name   = N_("Save EPG to disk after xmltv import"),
+      .desc   = N_("Writes the current in-memory EPG database to disk "
+                   "shortly after an xmltv import has completed, so should a crash/unexpected "
+                   "shutdown occur EPG data is saved "
+                   "(re-read on next startup)."),
+      .off    = offsetof(epggrab_conf_t, epgdb_saveafterimport),
+      .group  = 1,
+    },
+    {
       .type   = PT_STR,
       .id     = "cron",
       .name   = N_("Cron multi-line"),
@@ -484,6 +495,7 @@ void epggrab_init ( void )
   epggrab_conf.channel_renumber   = 0;
   epggrab_conf.channel_reicon     = 0;
   epggrab_conf.epgdb_periodicsave = 0;
+  epggrab_conf.epgdb_saveafterimport = 0;
 
   epggrab_cron_multi              = NULL;
 

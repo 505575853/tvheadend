@@ -454,11 +454,8 @@ tcp_socket_dead(int fd)
   if (err)
     return -err;
 #ifdef PLATFORM_FREEBSD
-  err = recv(fd, NULL, 0, MSG_PEEK | MSG_DONTWAIT);
-  if (err < 0)
+  if (recv(fd, NULL, 0, MSG_PEEK | MSG_DONTWAIT) < 0)
     return -errno;
-  else if (err == 0)
-      return -EIO;
 #else
   if (recv(fd, NULL, 0, MSG_PEEK | MSG_DONTWAIT) == 0)
     return -EIO;
@@ -578,7 +575,7 @@ tcp_connection_launch
   (int fd, void (*status) (void *opaque, htsmsg_t *m), access_t *aa)
 {
   tcp_server_launch_t *tsl, *res;
-  uint32_t used = 0, used2;
+  uint32_t used, used2;
   int64_t started = mclk();
   int c1, c2;
 
@@ -591,6 +588,7 @@ tcp_connection_launch
 
 try_again:
   res = NULL;
+  used = 0;
   LIST_FOREACH(tsl, &tcp_server_active, alink) {
     if (tsl->fd == fd) {
       res = tsl;

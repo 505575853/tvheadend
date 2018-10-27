@@ -77,7 +77,7 @@ tvheadend.DurationStore = new Ext.data.SimpleStore({
 
 // Function to convert numeric duration to corresponding label string
 // Note: triggered by minimum duration only. This would fail if ranges
-// had the same minimum (e.g. 15-30 mins and 15-60 minutes) (which we don't have). 
+// had the same minimum (e.g. 15-30 mins and 15-60 minutes) (which we don't have).
 
 tvheadend.durationLookupRange = function(value) {
     durationString = "";
@@ -89,17 +89,22 @@ tvheadend.durationLookupRange = function(value) {
 };
 
 tvheadend.seachTitleWeb = function(index, title){
+    var url = '';
     switch(index){
         case 1:
-            window.open('http://akas.imdb.com/find?q=' + encodeURIComponent(title), '_blank');
+            url = 'http://akas.imdb.com/find?q=' + encodeURIComponent(title);
             break;
         case 2:
-            window.open('https://www.thetvdb.com/search?q='+ encodeURIComponent(title)+'&l=en','_blank');
+            url = 'https://www.thetvdb.com/search?q='+ encodeURIComponent(title)+'&l=en';
             break;
         case 3:
-            window.open(tvheadend.filmAffinityLanguage() + encodeURIComponent(title), '_blank');
+            url = tvheadend.filmAffinityLanguage() + encodeURIComponent(title);
+            break;
+        case 4:
+            url = 'https://www.csfd.cz/hledat/?q=' + encodeURIComponent(title);
             break;
     }
+    if (url) window.open(url, '_blank');
 };
 
 tvheadend.filmAffinityLanguage = function() {
@@ -166,7 +171,9 @@ tvheadend.epgDetails = function(grid, index) {
         content += '<div class="x-epg-bottom">';
       }
       if (event.image != null && event.image.length > 0) {
+        content += '<div class="x-epg-image-container">';
         content += '<img class="x-epg-image" src="' + event.image + '">';
+        content += '</div>';
       }
       content += '<hr class="x-epg-hr"/>';
       if (event.summary)
@@ -236,9 +243,10 @@ tvheadend.epgDetails = function(grid, index) {
       var comboGetInfo = new Ext.form.ComboBox({
           store: new Ext.data.ArrayStore({
               data: [
-                [1, 'Find info from IMDB', 'imdb.png'],
-                [2, 'Find info from TheTVDB', 'thetvdb.png'],
-                [3, 'Find info from FilmAffinity', 'filmaffinity.png'],
+                [1, 'Query IMDB', 'imdb.png'],
+                [2, 'Query TheTVDB', 'thetvdb.png'],
+                [3, 'Query FilmAffinity', 'filmaffinity.png'],
+                [4, 'Query CSFD', 'csfd.png'],
               ],
               id: 0,
               fields: ['value', 'text', 'url']
@@ -248,7 +256,7 @@ tvheadend.epgDetails = function(grid, index) {
           tpl : '<tpl for=".">' +
                 '<div class="x-combo-list-item" ><img src="../static/icons/{url}">&nbsp;&nbsp;{text}</div>' +
                 '</tpl>',
-          emptyText:'Find info from ...',
+          emptyText:'Find info from …',
           valueField: 'value',
           displayField: 'text',
           width: 160,
@@ -269,7 +277,7 @@ tvheadend.epgDetails = function(grid, index) {
           handler: playProgram,
           iconCls: 'control_play',
           tooltip: _('Play this program'),
-          text: _("Play program")
+          text: _("Play")
       }));
 
       if (tvheadend.accessUpdate.dvr) {
@@ -329,7 +337,7 @@ tvheadend.epgDetails = function(grid, index) {
                 handler: recordEvent,
                 iconCls: 'rec',
                 tooltip: _('Record this program now'),
-                text: _('Record program')
+                text: _('Record')
             }));
           }
           buttons.push(new Ext.Button({
@@ -847,7 +855,7 @@ tvheadend.epg = function() {
     // Title search box
 
     var epgFilterTitle = new Ext.form.TextField({
-        emptyText: _('Search title...'),
+        emptyText: _('Search title…'),
         width: 200
     });
 
@@ -862,7 +870,7 @@ tvheadend.epg = function() {
     // Channels, uses global store
 
     var epgFilterChannels = new Ext.ux.form.ComboAny({
-        loadingText: _('Loading...'),
+        loadingText: _('Loading…'),
         width: 200,
         displayField: 'val',
         store: tvheadend.getChannels(),
@@ -871,7 +879,7 @@ tvheadend.epg = function() {
         forceSelection: true,
         triggerAction: 'all',
         typeAhead: true,
-        emptyText: _('Filter channel...'),
+        emptyText: _('Filter channel…'),
         listeners: {
             blur: function () {
                 if(this.getRawValue() == "" ) {
@@ -897,7 +905,7 @@ tvheadend.epg = function() {
     // Tags, uses global store
 
     var epgFilterChannelTags = new Ext.ux.form.ComboAny({
-        loadingText: _('Loading...'),
+        loadingText: _('Loading…'),
         width: 200,
         displayField: 'val',
         store: tvheadend.getChannelTags(),
@@ -906,7 +914,7 @@ tvheadend.epg = function() {
         forceSelection: true,
         triggerAction: 'all',
         typeAhead: true,
-        emptyText: _('Filter tag...'),
+        emptyText: _('Filter tag…'),
         listeners: {
             blur: function () {
                 if(this.getRawValue() == "" ) {
@@ -937,7 +945,7 @@ tvheadend.epg = function() {
     /// field is deleted and re-created inside clear filter.
     function createFilterCat(clearFilter, cat) {
       var filter = new Ext.ux.form.ComboAny({
-        loadingText: _('Loading...'),
+        loadingText: _('Loading…'),
         width: 200,
         displayField: 'val',
         store: category,
@@ -946,7 +954,7 @@ tvheadend.epg = function() {
         forceSelection: true,
         triggerAction: 'all',
         typeAhead: true,
-        emptyText: _('Filter category...'),
+        emptyText: _('Filter category…'),
         listeners: {
             blur: function () {
                 if(this.getRawValue() == "" ) {
@@ -988,7 +996,7 @@ tvheadend.epg = function() {
     // Content groups
 
     var epgFilterContentGroup = new Ext.ux.form.ComboAny({
-        loadingText: _('Loading...'),
+        loadingText: _('Loading…'),
         width: 200,
         displayField: 'val',
         store: tvheadend.ContentGroupStore,
@@ -997,7 +1005,7 @@ tvheadend.epg = function() {
         forceSelection: true,
         triggerAction: 'all',
         typeAhead: true,
-        emptyText: _('Filter content type...'),
+        emptyText: _('Filter content type…'),
         listeners: {
             blur: function () {
                 if(this.getRawValue() == "" ) {
@@ -1009,7 +1017,7 @@ tvheadend.epg = function() {
     });
 
     var epgFilterDuration = new Ext.ux.form.ComboAny({
-        loadingText: _('Loading...'),
+        loadingText: _('Loading…'),
         width: 150,
         displayField: 'label',
         store: tvheadend.DurationStore,
@@ -1018,7 +1026,7 @@ tvheadend.epg = function() {
         forceSelection: true,
         triggerAction: 'all',
         typeAhead: true,
-        emptyText: _('Filter duration...'),
+        emptyText: _('Filter duration…'),
         listeners: {
             blur: function () {
                 if(this.getRawValue() == "" ) {
@@ -1184,7 +1192,7 @@ tvheadend.epg = function() {
     var epgView = new Ext.ux.grid.livegrid.GridView({
         nearLimit: 100,
         loadMask: {
-            msg: _('Buffering. Please wait...')
+            msg: _('Buffering. Please wait…')
         },
         listeners: {
             beforebuffer: {
@@ -1230,7 +1238,9 @@ tvheadend.epg = function() {
         '-',
         {
             text: _('Help'),
+            tooltip: _('View help docs.'),
             iconCls: 'help',
+            tooltip: _('View help docs.'),
             handler: function() {
                 new tvheadend.mdhelp('epg');
             }
@@ -1330,7 +1340,7 @@ tvheadend.epg = function() {
             }
         }
     });
-    
+
     // Always reload the store when the tab is activated
     panel.on('beforeshow', function() {
         epgStore.reload();
@@ -1406,7 +1416,7 @@ tvheadend.epg = function() {
     }
 
     function createAutoRec() {
-    
+
         if (!tvheadend.accessUpdate.dvr)
             return;
 
