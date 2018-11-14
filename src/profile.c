@@ -728,9 +728,8 @@ profile_input_queue(void *opaque, streaming_message_t *sm)
   psm->psm_sm = sm;
   pthread_mutex_lock(&prsh->prsh_queue_mutex);
   if (prsh->prsh_queue_run) {
-    if (TAILQ_FIRST(&prsh->prsh_queue))
-      tvh_cond_signal(&prsh->prsh_queue_cond, 0);
     TAILQ_INSERT_TAIL(&prsh->prsh_queue, psm, psm_link);
+    tvh_cond_signal(&prsh->prsh_queue_cond, 0);
   } else {
     streaming_msg_free(sm);
     free(psm);
@@ -1021,15 +1020,17 @@ profile_sharer_destroy(profile_chain_t *prch)
  *
  */
 void
-profile_chain_init(profile_chain_t *prch, profile_t *pro, void *id)
+profile_chain_init(profile_chain_t *prch, profile_t *pro, void *id, int queue)
 {
   memset(prch, 0, sizeof(*prch));
   if (pro)
     profile_grab(pro);
   prch->prch_pro = pro;
   prch->prch_id  = id;
-  streaming_queue_init(&prch->prch_sq, 0, 0);
-  prch->prch_sq_used = 1;
+  if (queue) {
+    streaming_queue_init(&prch->prch_sq, 0, 0);
+    prch->prch_sq_used = 1;
+  }
   LIST_INSERT_HEAD(&profile_chains, prch, prch_link);
   prch->prch_linked = 1;
   prch->prch_stop = 1;
